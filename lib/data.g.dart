@@ -6,24 +6,24 @@ part of 'data.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class TaskAdapter extends TypeAdapter<Task> {
+class TaskAdapter extends TypeAdapter<TaskData> {
   @override
   final int typeId = 0;
 
   @override
-  Task read(BinaryReader reader) {
+  TaskData read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return Task()
+    return TaskData()
       ..name = fields[0] as String
       ..isCompleted = fields[1] as bool
       ..priority = fields[2] as Priority;
   }
 
   @override
-  void write(BinaryWriter writer, Task obj) {
+  void write(BinaryWriter writer, TaskData obj) {
     writer
       ..writeByte(3)
       ..writeByte(0)
