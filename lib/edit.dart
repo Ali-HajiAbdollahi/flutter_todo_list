@@ -1,0 +1,184 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_todo_list/data.dart';
+import 'package:flutter_todo_list/main.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+
+class EditTaskScreen extends StatefulWidget {
+  final TaskData task;
+  const EditTaskScreen({super.key, required this.task});
+
+  @override
+  State<EditTaskScreen> createState() => _EditTaskScreenState();
+}
+
+class _EditTaskScreenState extends State<EditTaskScreen> {
+  final TextEditingController _editController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    ThemeData themeData = Theme.of(context);
+    return Scaffold(
+      backgroundColor: themeData.colorScheme.onSecondary,
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: themeData.colorScheme.onSecondary,
+        foregroundColor: themeData.colorScheme.onSurface,
+        title: Text("Edit Task"),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          final task = TaskData();
+          task.name = _editController.text;
+          task.priority = Priority.low;
+          if (task.isInBox) {
+            task.save();
+          } else {
+            final Box<TaskData> box = Hive.box(taskBoxName);
+            box.add(task);
+          }
+          task.save();
+          Navigator.of(context).pop();
+        },
+        label: Row(
+          children: [
+            Text("Save Changes"),
+            SizedBox(width: 4),
+            Icon(CupertinoIcons.check_mark, size: 18),
+          ],
+        ),
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: PriorityCheckBox(
+                      label: "High",
+                      color: primaryColor,
+                      isSelected: widget.task.priority == Priority.high,
+                      onTap: () {
+                        setState(() {
+                          widget.task.priority = Priority.high;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: PriorityCheckBox(
+                      label: "Normal",
+                      color: Color(0xffF09819),
+                      isSelected: widget.task.priority == Priority.normal,
+                      onTap: () {
+                        setState(() {
+                          widget.task.priority = Priority.normal;
+                        });
+                      },
+                    ),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: PriorityCheckBox(
+                      label: "Low",
+                      color: Color(0xff3BE1F1),
+                      isSelected: widget.task.priority == Priority.low,
+                      onTap: () {
+                        setState(() {
+                          widget.task.priority = Priority.low;
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              TextField(
+                controller: _editController,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  label: Text("Add task for today...", style: Theme.of(context).textTheme.bodyLarge!.apply(fontSizeFactor: 1.2),),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PriorityCheckBox extends StatelessWidget {
+  final String label;
+  final Color color;
+  final bool isSelected;
+  final GestureTapCallback onTap;
+
+  const PriorityCheckBox({
+    super.key,
+    required this.label,
+    required this.color,
+    required this.isSelected,
+    required this.onTap,
+  });
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        height: 36,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(
+            width: 2,
+            color: secondaryTextColor.withValues(alpha: 0.2),
+          ),
+        ),
+        child: Stack(
+          children: [
+            Center(child: Text(label)),
+            Positioned(
+              right: 8,
+              top: 0,
+              bottom: 0,
+              child: Center(
+                child: CheckBoxShape(value: isSelected, color: color),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class CheckBoxShape extends StatelessWidget {
+  final bool value;
+  final Color color;
+
+  const CheckBoxShape({super.key, required this.value, required this.color});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: color,
+      ),
+      child:
+          value
+              ? Center(
+                child: Icon(
+                  CupertinoIcons.check_mark,
+                  color: Theme.of(context).colorScheme.onSecondary,
+                  size: 16,
+                ),
+              )
+              : null,
+    );
+  }
+}
