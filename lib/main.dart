@@ -19,6 +19,9 @@ void main() async {
 const primaryColor = Color(0xff794CFF);
 const primaryContainerColor = Color(0xff5C0AFF);
 const secondaryTextColor = Color(0xffAFBED0);
+const Color highPriority = primaryColor;
+const Color normalPriority = Color(0xffF09819);
+const Color lowPriority = Color(0xff3BE1F1);
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -72,16 +75,18 @@ class HomeScreen extends StatelessWidget {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute(builder: (context) => EditTaskScreen(task: TaskData(),)));
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => EditTaskScreen(task: TaskData()),
+            ),
+          );
         },
         label: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text("Add New Task"),
-            SizedBox(width: 8,),
-            Icon(CupertinoIcons.add, size: 18,)
+            SizedBox(width: 8),
+            Icon(CupertinoIcons.add, size: 18),
           ],
         ),
       ),
@@ -217,7 +222,8 @@ class HomeScreen extends StatelessWidget {
 
 class TaskItem extends StatefulWidget {
   const TaskItem({super.key, required this.task});
-
+  static const double height = 84;
+  static const double borderRadius = 8;
   final TaskData task;
 
   @override
@@ -228,6 +234,15 @@ class _TaskItemState extends State<TaskItem> {
   @override
   Widget build(BuildContext context) {
     ThemeData themeData = Theme.of(context);
+    final Color priorityColor;
+    switch (widget.task.priority) {
+      case Priority.low:
+        priorityColor = lowPriority;
+      case Priority.normal:
+        priorityColor = normalPriority;
+      case Priority.high:
+        priorityColor = highPriority;
+    }
     return InkWell(
       onTap: () {
         setState(() {
@@ -236,10 +251,10 @@ class _TaskItemState extends State<TaskItem> {
       },
       child: Container(
         margin: EdgeInsets.fromLTRB(0, 4, 0, 4),
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-        height: 84,
+        padding: const EdgeInsets.fromLTRB(16, 0, 0, 0),
+        height: TaskItem.height,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(TaskItem.borderRadius),
           color: themeData.colorScheme.onSecondary,
           boxShadow: [
             BoxShadow(
@@ -262,6 +277,17 @@ class _TaskItemState extends State<TaskItem> {
                           : null,
                 ),
                 overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Container(
+              width: 6,
+              height: TaskItem.height,
+              decoration: BoxDecoration(
+                color: priorityColor,
+                borderRadius: BorderRadius.only(
+                  topRight: Radius.circular(TaskItem.borderRadius),
+                  bottomRight: Radius.circular(TaskItem.borderRadius),
+                ),
               ),
             ),
           ],
