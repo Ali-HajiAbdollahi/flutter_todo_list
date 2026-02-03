@@ -13,7 +13,7 @@ class EditTaskScreen extends StatefulWidget {
 }
 
 class _EditTaskScreenState extends State<EditTaskScreen> {
-  final TextEditingController _editController = TextEditingController();
+ late final TextEditingController _editController = TextEditingController(text: widget.task.name);
 
   @override
   Widget build(BuildContext context) {
@@ -29,16 +29,15 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          final task = TaskData();
-          task.name = _editController.text;
-          task.priority = widget.task.priority;
-          if (task.isInBox) {
-            task.save();
+          widget.task.name = _editController.text;
+          widget.task.priority = widget.task.priority;
+          if (widget.task.isInBox) {
+            widget.task.save();
           } else {
             final Box<TaskData> box = Hive.box(taskBoxName);
-            box.add(task);
+            box.add(widget.task);
           }
-          task.save();
+          widget.task.save();
           Navigator.of(context).pop();
         },
         label: Row(
@@ -100,7 +99,12 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                 controller: _editController,
                 decoration: InputDecoration(
                   border: InputBorder.none,
-                  label: Text("Add task for today...", style: Theme.of(context).textTheme.bodyLarge!.apply(fontSizeFactor: 1.2),),
+                  label: Text(
+                    "Add task for today...",
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodyLarge!.apply(fontSizeFactor: 1.2),
+                  ),
                 ),
               ),
             ],

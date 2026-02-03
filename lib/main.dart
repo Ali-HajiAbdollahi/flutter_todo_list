@@ -222,7 +222,7 @@ class HomeScreen extends StatelessWidget {
 
 class TaskItem extends StatefulWidget {
   const TaskItem({super.key, required this.task});
-  static const double height = 84;
+  static const double height = 74;
   static const double borderRadius = 8;
   final TaskData task;
 
@@ -246,7 +246,11 @@ class _TaskItemState extends State<TaskItem> {
     return InkWell(
       onTap: () {
         setState(() {
-          widget.task.isCompleted = !widget.task.isCompleted;
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => EditTaskScreen(task: widget.task),
+            ),
+          );
         });
       },
       child: Container(
@@ -265,7 +269,14 @@ class _TaskItemState extends State<TaskItem> {
         ),
         child: Row(
           children: [
-            MyCheckBox(value: widget.task.isCompleted),
+            InkWell(
+              onTap: () {
+                setState(() {
+                  widget.task.isCompleted = !widget.task.isCompleted;
+                });
+              },
+              child: MyCheckBox(value: widget.task.isCompleted),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Text(
