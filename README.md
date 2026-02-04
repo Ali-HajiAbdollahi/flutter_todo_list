@@ -2,7 +2,7 @@
 
 A beautiful and functional todo list application built with Flutter. This is the **third project** in my Flutter learning journey, focusing on state management, local data persistence, and modern UI design.
 
-[![Download APK](https://github.com/Ali-HajiAbdollahi/flutter_todo_list/releases/download/v1.0.0/ToDoList.apk)
+[![Download APK](https://img.shields.io/badge/Download-APK-blue.svg)](https://github.com/Ali-HajiAbdollahi/flutter_todo_list/releases/download/v1.0.0/ToDoList.apk)
 
 ## 📱 Screenshots
 
