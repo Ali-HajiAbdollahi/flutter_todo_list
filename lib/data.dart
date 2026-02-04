@@ -7,7 +7,7 @@ class TaskData extends HiveObject{
   @HiveField(1)
   bool isCompleted = false;
   @HiveField(2)
-  Priority priority = Priority.low;
+  Priority priority = Priority.high;
   
 }
 

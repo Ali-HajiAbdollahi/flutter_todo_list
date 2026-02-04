@@ -4,16 +4,19 @@ import 'package:flutter_todo_list/data.dart';
 import 'package:flutter_todo_list/main.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class EditTaskScreen extends StatefulWidget {
+class TaskScreen extends StatefulWidget {
   final TaskData task;
-  const EditTaskScreen({super.key, required this.task});
+  final String state;
+  const TaskScreen({super.key, required this.task, required this.state});
 
   @override
-  State<EditTaskScreen> createState() => _EditTaskScreenState();
+  State<TaskScreen> createState() => _TaskScreenState();
 }
 
-class _EditTaskScreenState extends State<EditTaskScreen> {
- late final TextEditingController _editController = TextEditingController(text: widget.task.name);
+class _TaskScreenState extends State<TaskScreen> {
+  late final TextEditingController _editController = TextEditingController(
+    text: widget.task.name,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -24,13 +27,24 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         elevation: 0,
         backgroundColor: themeData.colorScheme.onSecondary,
         foregroundColor: themeData.colorScheme.onSurface,
-        title: Text("Edit Task"),
+        title: Text(widget.state),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           widget.task.name = _editController.text;
           widget.task.priority = widget.task.priority;
+            if (widget.task.name.isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  backgroundColor: Colors.red,
+                  content: Text("Please enter a task name."),
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              return;
+            }
+
           if (widget.task.isInBox) {
             widget.task.save();
           } else {
@@ -40,7 +54,7 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
           widget.task.save();
           Navigator.of(context).pop();
         },
-        label: Row(
+        label: const Row(
           children: [
             Text("Save Changes"),
             SizedBox(width: 4),
@@ -67,11 +81,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       },
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: PriorityCheckBox(
                       label: "Normal",
-                      color: Color(0xffF09819),
+                      color: const Color(0xffF09819),
                       isSelected: widget.task.priority == Priority.normal,
                       onTap: () {
                         setState(() {
@@ -80,11 +94,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
                       },
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: PriorityCheckBox(
                       label: "Low",
-                      color: Color(0xff3BE1F1),
+                      color: const Color(0xff3BE1F1),
                       isSelected: widget.task.priority == Priority.low,
                       onTap: () {
                         setState(() {
@@ -138,7 +152,8 @@ class PriorityCheckBox extends StatelessWidget {
           borderRadius: BorderRadius.circular(4),
           border: Border.all(
             width: 2,
-            color: secondaryTextColor.withValues(alpha: 0.2),
+            color:
+                !isSelected ? secondaryTextColor.withValues(alpha: 0.2) : color,
           ),
         ),
         child: Stack(
