@@ -1,8 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_todo_list/data.dart';
+import 'package:flutter_todo_list/data/data.dart';
+import 'package:flutter_todo_list/data/repo/repository.dart';
 import 'package:flutter_todo_list/main.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:provider/provider.dart';
 
 class TaskScreen extends StatefulWidget {
   final TaskData task;
@@ -34,24 +35,19 @@ class _TaskScreenState extends State<TaskScreen> {
         onPressed: () {
           widget.task.name = _editController.text;
           widget.task.priority = widget.task.priority;
-            if (widget.task.name.isEmpty) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  backgroundColor: Colors.red,
-                  content: Text("Please enter a task name."),
-                  duration: Duration(seconds: 2),
-                ),
-              );
-              return;
-            }
-
-          if (widget.task.isInBox) {
-            widget.task.save();
-          } else {
-            final Box<TaskData> box = Hive.box(taskBoxName);
-            box.add(widget.task);
+          if (widget.task.name.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                backgroundColor: Colors.red,
+                content: Text("Please enter a task name."),
+                duration: Duration(seconds: 2),
+              ),
+            );
+            return;
           }
-          widget.task.save();
+          final repository = Provider.of<Repository<TaskData>>(context, listen: false);
+          repository.createOrUpdate(widget.task);
+
           Navigator.of(context).pop();
         },
         label: const Row(
