@@ -1,16 +1,17 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_todo_list/data/data.dart';
 import 'package:flutter_todo_list/data/repo/repository.dart';
 import 'package:flutter_todo_list/main.dart';
 import 'package:flutter_todo_list/screens/edit/edit.dart';
+import 'package:flutter_todo_list/screens/home/bloc/task_list_bloc.dart';
 import 'package:flutter_todo_list/widgets.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
   final TextEditingController controller = TextEditingController();
-  final ValueNotifier<String> searchKeyboardNotifier = ValueNotifier('');
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
@@ -39,123 +40,128 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: SafeArea(
-          child: Column(
-            children: [
-              Container(
-                height: 110,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      themeData.colorScheme.primary,
-                      themeData.colorScheme.primaryContainer,
-                    ],
+        body: BlocProvider<TaskListBloc>(
+          create:
+              (context) => TaskListBloc(context.read<Repository<TaskData>>()),
+          child: SafeArea(
+            child: Column(
+              children: [
+                Container(
+                  height: 110,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        themeData.colorScheme.primary,
+                        themeData.colorScheme.primaryContainer,
+                      ],
+                    ),
                   ),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              "To Do List",
-                              style: themeData.textTheme.titleLarge!.copyWith(
-                                color: Colors.white,
-                              ),
-                            ),
-                            Icon(
-                              CupertinoIcons.share,
-                              color: themeData.colorScheme.surface,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Expanded(flex: 2, child: SizedBox()),
-                      Expanded(
-                        flex: 3,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            double availableHeight = constraints.maxHeight;
-
-                            return Container(
-                              padding: const EdgeInsets.fromLTRB(2, 6, 6, 6),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(
-                                  availableHeight / 2,
-                                ),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.1),
-                                    blurRadius: 20,
-                                  ),
-                                ],
-                              ),
-                              child: TextField(
-                                cursorHeight: 20,
-                                cursorWidth: 1,
-                                onChanged: (value) {
-                                  searchKeyboardNotifier.value =
-                                      controller.text;
-                                },
-                                controller: controller,
-                                decoration: const InputDecoration(
-                                  prefixIcon: Icon(
-                                    CupertinoIcons.search,
-                                    size: 22,
-                                  ),
-                                  labelText: "Search",
-                                  border: InputBorder.none,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          flex: 2,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "To Do List",
+                                style: themeData.textTheme.titleLarge!.copyWith(
+                                  color: Colors.white,
                                 ),
                               ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              Expanded(
-                child: ValueListenableBuilder<String>(
-                  valueListenable: searchKeyboardNotifier,
-                  builder: (context, value, child) {
-                    return Consumer<Repository<TaskData>>(
-                      builder: (
-                        BuildContext context,
-                        repository,
-                        Widget? child,
-                      ) {
-                        return FutureBuilder<List<TaskData>>(
-                          future: repository.getAll(
-                            searchKeyWord: controller.text,
+                              Icon(
+                                CupertinoIcons.share,
+                                color: themeData.colorScheme.surface,
+                              ),
+                            ],
                           ),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData) {
-                              if (snapshot.data!.isNotEmpty) {
-                                return TaskList(
-                                  items: snapshot.data!,
-                                  themeData: themeData,
-                                );
-                              } else {
-                                return const EmptyState();
-                              }
-                            } else {
-                              return const CircularProgressIndicator();
-                            }
-                          },
-                        );
-                      },
-                    );
-                  },
+                        ),
+                        const Expanded(flex: 2, child: SizedBox()),
+                        Expanded(
+                          flex: 3,
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              double availableHeight = constraints.maxHeight;
+
+                              return Container(
+                                padding: const EdgeInsets.fromLTRB(2, 6, 6, 6),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(
+                                    availableHeight / 2,
+                                  ),
+                                  color: Colors.white,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.1,
+                                      ),
+                                      blurRadius: 20,
+                                    ),
+                                  ],
+                                ),
+                                child: TextField(
+                                  cursorHeight: 20,
+                                  cursorWidth: 1,
+                                  onChanged: (value) {
+                                    context.read<TaskListBloc>().add(
+                                      TaskListSearch(value),
+                                    );
+                                  },
+                                  controller: controller,
+                                  decoration: const InputDecoration(
+                                    prefixIcon: Icon(
+                                      CupertinoIcons.search,
+                                      size: 22,
+                                    ),
+                                    labelText: "Search",
+                                    border: InputBorder.none,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-            ],
+                Expanded(
+                  child: Consumer<Repository<TaskData>>(
+                    builder: (
+                      context,
+                      Repository<TaskData> value,
+                      Widget? child,
+                    ) {
+                      context.read<TaskListBloc>().add(TaskListStarted());
+                      return BlocBuilder<TaskListBloc, TaskListState>(
+                        builder: (context, state) {
+                          if (state is TaskListSuccess) {
+                            return TaskList(
+                              items: state.items,
+                              themeData: themeData,
+                            );
+                          } else if (state is TaskListEmpty) {
+                            return const EmptyState();
+                          } else if (state is TaskListLoading ||
+                              state is TaskListInitial) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else if (state is TaskListError) {
+                            return Center(child: Text(state.errorMessage));
+                          } else {
+                            throw Exception('State is not Valid.');
+                          }
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -206,9 +212,10 @@ class TaskList extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 onPressed: () {
+                  final bloc = context.read<TaskListBloc>();
                   showDialog(
                     context: context,
-                    builder: (context) {
+                    builder: (dialogContext) {
                       return AlertDialog(
                         insetPadding: const EdgeInsets.all(20),
                         title: const Text('Delete All Tasks'),
@@ -227,7 +234,7 @@ class TaskList extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              Navigator.of(context).pop();
+                              Navigator.of(dialogContext).pop();
                             },
                             child: const Text('Cancel'),
                           ),
@@ -244,13 +251,10 @@ class TaskList extends StatelessWidget {
                               ),
                             ),
                             onPressed: () {
-                              final repository =
-                                  Provider.of<Repository<TaskData>>(
-                                    context,
-                                    listen: false,
-                                  );
-                              repository.deleteAll();
-                              Navigator.of(context).pop();
+                              bloc.add(
+                                TaskListDeleteAll(),
+                              );
+                              Navigator.of(dialogContext).pop();
                             },
                             child: const Text('Delete'),
                           ),
@@ -364,9 +368,10 @@ class _TaskItemState extends State<TaskItem> {
               icon: const Icon(CupertinoIcons.delete, size: 20),
               color: Colors.red.withValues(alpha: 0.7),
               onPressed: () {
+                final bloc = context.read<TaskListBloc>();
                 showDialog(
                   context: context,
-                  builder: (context) {
+                  builder: (dialogContext) {
                     return AlertDialog(
                       insetPadding: const EdgeInsets.all(20),
                       title: const Text('Delete Task'),
@@ -385,7 +390,7 @@ class _TaskItemState extends State<TaskItem> {
                             ),
                           ),
                           onPressed: () {
-                            Navigator.of(context).pop();
+                            Navigator.of(dialogContext).pop();
                           },
                           child: const Text('Cancel'),
                         ),
@@ -402,10 +407,10 @@ class _TaskItemState extends State<TaskItem> {
                             ),
                           ),
                           onPressed: () {
-                            final repository =
-                                Provider.of<Repository<TaskData>>(context, listen: false);
-                            repository.delete(widget.task);
-                            Navigator.of(context).pop();
+                            bloc.add(
+                              TaskListDelete(widget.task),
+                            );
+                            Navigator.of(dialogContext).pop();
                           },
                           child: const Text('Delete'),
                         ),
